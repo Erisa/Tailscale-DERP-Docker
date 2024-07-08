@@ -1,23 +1,30 @@
-FROM alpine:latest AS builder
+FROM --platform=${BUILDPLATFORM} alpine:latest AS builder
 
-LABEL org.opencontainers.image.source https://github.com/tijjjy/Tailscale-DERP-Docker
+ARG VERSION=v1.68.2
 
-#Install GO and Tailscale DERPER
-RUN apk add go --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+LABEL org.opencontainers.image.source https://github.com/Erisa/Tailscale-DERP-Docker
 
-# Tailscale and derper versions should be as close as possible. A better way of keeping these in sync needs to be found.
-RUN go install tailscale.com/cmd/derper@v1.68.2
+#Install git
+RUN apk add git bash curl --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /build
+
+RUN git clone https://github.com/tailscale/tailscale --branch ${VERSION} .
+
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} ./tool/go build -o . tailscale.com/cmd/tailscale tailscale.com/cmd/tailscaled tailscale.com/cmd/derper
 
 FROM alpine:latest
 
 #Install Tailscale requirements
 RUN apk add curl iptables
 
-#Install Tailscale and Tailscaled
-RUN apk add tailscale --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
-
 RUN mkdir -p /root/go/bin
-COPY --from=builder /root/go/bin/derper /root/go/bin/derper
+COPY --from=builder /build/derper /root/go/bin/derper
+COPY --from=builder /build/tailscale /usr/bin/tailscale
+COPY --from=builder /build/tailscaled /usr/sbin/tailscaled
 
 #Copy init script
 COPY init.sh /init.sh
@@ -29,4 +36,4 @@ EXPOSE 443/tcp
 #STUN
 EXPOSE 3478/udp
 
-ENTRYPOINT /init.sh
+ENTRYPOINT ["/init.sh"]
