@@ -4,6 +4,7 @@ services:
    tailscale-derp:
        container_name: tailscale-derp
        image: tailscale-derp-docker:1.0
+       build: .
        hostname: ${TAILSCALE_DERP_HOSTNAME}
        volumes:
          - /lib/modules:/lib/modules:ro
