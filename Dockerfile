@@ -4,7 +4,9 @@ LABEL org.opencontainers.image.source https://github.com/tijjjy/Tailscale-DERP-D
 
 #Install GO and Tailscale DERPER
 RUN apk add go --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
-RUN go install tailscale.com/cmd/derper@main
+
+# Tailscale and derper versions should be as close as possible. A better way of keeping these in sync needs to be found.
+RUN go install tailscale.com/cmd/derper@v1.68.2
 
 FROM alpine:latest
 
