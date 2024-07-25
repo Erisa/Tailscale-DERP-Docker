@@ -1,6 +1,6 @@
 FROM --platform=${BUILDPLATFORM} alpine:latest AS builder
 
-ARG VERSION=v1.68.2
+ARG VERSION=v1.70.0
 
 LABEL org.opencontainers.image.source https://github.com/Erisa/Tailscale-DERP-Docker
 
